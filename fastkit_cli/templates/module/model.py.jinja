@@ -1,0 +1,22 @@
+from sqlalchemy.orm import Mapped, mapped_column
+from fastkit_core.database import (
+    BaseWithTimestamps,
+    IntIdMixin,
+    # UUIDMixin,          # Uncomment to use UUID as primary key instead of IntIdMixin
+    # SoftDeleteMixin,    # Uncomment to enable soft delete (deleted_at)
+    # SlugMixin,          # Uncomment to add slug field (slug)
+    # PublishableMixin,   # Uncomment to add published_at field
+    # TranslatableMixin,  # Uncomment for multi-language field support
+)
+
+
+class {{ model_name }}(BaseWithTimestamps, IntIdMixin):
+    __tablename__ = "{{ table_name }}"
+
+    # Define your columns here
+    # Example:
+    # name: Mapped[str] = mapped_column(nullable=False)
+    # description: Mapped[str | None] = mapped_column(nullable=True)
+
+    def __repr__(self) -> str:
+        return f"<{{ model_name }} id={self.id}>"
