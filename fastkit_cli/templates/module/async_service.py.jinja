@@ -1,0 +1,89 @@
+from typing import Any
+from fastkit_core.services import AsyncBaseCrudService
+# from fastkit_core.services import SlugServiceMixin  # Uncomment if model uses SlugMixin
+
+from .models import {{ model_name }}
+from .async_repository import {{ model_name }}AsyncRepository
+from .schemas import {{ model_name }}Create, {{ model_name }}Update, {{ model_name }}Response
+
+
+class {{ model_name }}AsyncService(AsyncBaseCrudService[
+    {{ model_name }},
+    {{ model_name }}Create,
+    {{ model_name }}Update,
+    {{ model_name }}Response
+]):
+    """
+    Async service for {{ model_name }} business logic.
+
+    Inherits all async CRUD operations from AsyncBaseCrudService:
+        - await find(id) / await find_or_fail(id) / await get_all() / await filter(**kwargs)
+        - await paginate(page, per_page) / await exists(**kwargs) / await count(**kwargs)
+        - await create(data) / await create_many(data_list)
+        - await update(id, data) / await update_many(filters, data)
+        - await delete(id) / await delete_many(filters)
+
+    Lifecycle hooks available to override:
+        - async validate_create(data) / async validate_update(id, data)
+        - async before_create(data) / async after_create(instance)
+        - async before_update(id, data) / async after_update(instance)
+        - async before_delete(id) / async after_delete(id)
+    """
+
+    def __init__(self, session):
+        repository = {{ model_name }}AsyncRepository(session)
+        super().__init__(repository, response_schema={{ model_name }}Response)
+
+    # -------------------------------------------------------------------------
+    # Validation hooks
+    # -------------------------------------------------------------------------
+
+    async def validate_create(self, data: {{ model_name }}Create) -> None:
+        pass
+        # Example:
+        # if await self.exists(name=data.name):
+        #     raise ValueError(_('validation.{{ table_name }}.name_taken'))
+
+    async def validate_update(self, id: Any, data: {{ model_name }}Update) -> None:
+        pass
+
+    # -------------------------------------------------------------------------
+    # Lifecycle hooks
+    # -------------------------------------------------------------------------
+
+    async def before_create(self, data: dict) -> dict:
+        return data
+        # Example:
+        # data['slug'] = await self.async_generate_slug(data['name'])  # Requires SlugServiceMixin
+        # return data
+
+    async def after_create(self, instance: {{ model_name }}) -> None:
+        pass
+        # Example:
+        # await send_welcome_email(instance.email)
+
+    async def before_update(self, id: Any, data: dict) -> dict:
+        return data
+
+    async def after_update(self, instance: {{ model_name }}) -> None:
+        pass
+
+    async def before_delete(self, id: Any) -> None:
+        pass
+
+    async def after_delete(self, id: Any) -> None:
+        pass
+
+    # -------------------------------------------------------------------------
+    # Transaction management
+    # -------------------------------------------------------------------------
+
+    # Example of manual transaction control:
+    # async def transfer(self, from_id: int, to_id: int, amount: float) -> None:
+    #     try:
+    #         await self.update(from_id, data, commit=False)
+    #         await self.update(to_id, data, commit=False)
+    #         await self.commit()
+    #     except Exception:
+    #         await self.rollback()
+    #         raise
