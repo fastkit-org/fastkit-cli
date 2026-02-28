@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from starlette.responses import JSONResponse
 
 from fastkit_core.database import get_async_db
-from fastkit_core.http import success_response, error_response
+from fastkit_core.http import success_response, error_response, paginated_response
 from fastkit_core.validation.errors import format_validation_errors
 from fastkit_core.i18n import _
 from .service import {{ model_name }}Service
@@ -27,7 +27,7 @@ async def index(
     service: {{ model_name }}Service = Depends(get_service),
 ) -> JSONResponse:
     items, meta = await service.paginate(page=page, per_page=per_page)
-    return success_response(data=items, meta=meta)
+    return paginated_response(items=items, pagination=meta)
 
 
 @router.get("/{id}", response_model={{ model_name }}Response)
@@ -36,18 +36,17 @@ async def show(
     service: {{ model_name }}Service = Depends(get_service),
 ) -> JSONResponse:
     item = await service.find_or_fail(id)
-    return success_response(data=item)
+    return success_response(data=item.model_dump())
 
 
 @router.post("/", response_model={{ model_name }}Response, status_code=status.HTTP_201_CREATED)
 async def store(
-    data: dict,
+    data: {{ model_name }}Create,
     service: {{ model_name }}Service = Depends(get_service),
 ) -> JSONResponse:
     try:
-        payload = {{ model_name }}Create(**data)
-        item = await service.create(payload)
-        return success_response(data=item, status_code=status.HTTP_201_CREATED)
+        item = await service.create(data)
+        return success_response(data=item.model_dump(), status_code=status.HTTP_201_CREATED)
     except ValidationError as e:
         errors = format_validation_errors(e.errors())
         return error_response(message=_('validation.failed'), errors=errors, status_code=422)
@@ -56,13 +55,12 @@ async def store(
 @router.put("/{id}", response_model={{ model_name }}Response)
 async def update(
     id: int,
-    data: dict,
+    data: {{ model_name }}Update,
     service: {{ model_name }}Service = Depends(get_service),
 ) -> JSONResponse:
     try:
-        payload = {{ model_name }}Update(**data)
-        item = await service.update(id, payload)
-        return success_response(data=item)
+        item = await service.update(id, data)
+        return success_response(data=item.model_dump())
     except ValidationError as e:
         errors = format_validation_errors(e.errors())
         return error_response(message=_('validation.failed'), errors=errors, status_code=422)

@@ -7,7 +7,7 @@ from .repository import {{ model_name }}AsyncRepository
 from .schemas import {{ model_name }}Create, {{ model_name }}Update, {{ model_name }}Response
 
 
-class {{ model_name }}AsyncService(AsyncBaseCrudService[
+class {{ model_name }}Service(AsyncBaseCrudService[
     {{ model_name }},
     {{ model_name }}Create,
     {{ model_name }}Update,
