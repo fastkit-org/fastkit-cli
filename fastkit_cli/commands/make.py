@@ -10,16 +10,6 @@ app = typer.Typer(help="Code generation commands.")
 # Path to templates folder (relative to this file)
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "module"
 
-# Templates to generate for a full module
-MODULE_TEMPLATES = [
-    ("model.py.jinja", "models.py"),
-    ("schemas.py.jinja", "schemas.py"),
-    ("repository.py.jinja", "repository.py"),
-    ("async_repository.py.jinja", "async_repository.py"),
-    ("service.py.jinja", "service.py"),
-    ("async_service.py.jinja", "async_service.py"),
-]
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
@@ -111,6 +101,7 @@ def module(
     name: str = typer.Argument(..., help="Module name in PascalCase (e.g. Invoice, InvoiceItem)"),
     modules_dir: str = typer.Option("modules", "--dir", "-d", help="Modules root directory"),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
+    async_mode: bool = typer.Option(False, "--async", "-a", help="Use async repository and service"),
 ):
     """
     Generate a new module with model, schemas, repository, and service.
@@ -155,7 +146,21 @@ def module(
 
     # Generate each template
     skipped = []
-    for template_name, output_filename in MODULE_TEMPLATES:
+    if async_mode:
+        module_templates = [
+            ("model.py.jinja", "models.py"),
+            ("schemas.py.jinja", "schemas.py"),
+            ("async_repository.py.jinja", "repository.py"),
+            ("async_service.py.jinja", "service.py"),
+        ]
+    else:
+        module_templates = [
+            ("model.py.jinja", "models.py"),
+            ("schemas.py.jinja", "schemas.py"),
+            ("repository.py.jinja", "repository.py"),
+            ("service.py.jinja", "service.py"),
+        ]
+    for template_name, output_filename in module_templates:
         output_path = module_path / output_filename
 
         if output_path.exists() and not force:

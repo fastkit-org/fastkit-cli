@@ -3,7 +3,7 @@ from fastkit_core.services import AsyncBaseCrudService
 # from fastkit_core.services import SlugServiceMixin  # Uncomment if model uses SlugMixin
 
 from .models import {{ model_name }}
-from .async_repository import {{ model_name }}AsyncRepository
+from .repository import {{ model_name }}AsyncRepository
 from .schemas import {{ model_name }}Create, {{ model_name }}Update, {{ model_name }}Response
 
 
