@@ -255,3 +255,40 @@ def schema(
     typer.secho("Done!", fg=typer.colors.BRIGHT_WHITE, bold=True)
     typer.echo(f"  Define your schemas in  {module_path}/schemas.py")
     typer.echo("")
+
+
+@app.command()
+def repository(
+    name: str = typer.Argument(..., help="Repository name in PascalCase (e.g. Invoice)"),
+    path: str = typer.Option(".", "--path", "-p", help="Path to target directory"),
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing file"),
+    async_mode: bool = typer.Option(False, "--async", "-a", help="Use async repository"),
+):
+    """
+    Generate only a repository file.
+
+    \b
+    Example:
+        fastkit make repository Invoice
+        fastkit make repository Invoice --async
+        fastkit make repository Invoice --path modules/invoices
+    """
+    context = _build_context(name)
+    module_path = Path(path)
+    template = "async_repository.py.jinja" if async_mode else "repository.py.jinja"
+
+    typer.echo("")
+    typer.secho(f"Generating repository: {context['model_name']}", fg=typer.colors.BRIGHT_CYAN, bold=True)
+    typer.echo(f"  Mode: {'async' if async_mode else 'sync'}")
+    typer.echo("")
+
+    _render_and_write(
+        template_name=template,
+        output_path=module_path / "repository.py",
+        context=context,
+        force=force,
+    )
+
+    typer.echo("")
+    typer.secho("Done!", fg=typer.colors.BRIGHT_WHITE, bold=True)
+    typer.echo("")
