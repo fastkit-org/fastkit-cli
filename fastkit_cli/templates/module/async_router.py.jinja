@@ -1,0 +1,76 @@
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import ValidationError
+from starlette.responses import JSONResponse
+
+from fastkit_core.database import get_async_db
+from fastkit_core.http import success_response, error_response
+from fastkit_core.validation.errors import format_validation_errors
+from fastkit_core.i18n import _
+from .service import {{ model_name }}Service
+from .schemas import {{ model_name }}Create, {{ model_name }}Update, {{ model_name }}Response
+
+router = APIRouter(
+    prefix="/{{ table_name }}",
+    tags=["{{ model_name }}"],
+)
+
+
+def get_service(session: AsyncSession = Depends(get_async_db)) -> {{ model_name }}Service:
+    return {{ model_name }}Service(session)
+
+
+@router.get("/", response_model=list[{{ model_name }}Response])
+async def index(
+    page: int = 1,
+    per_page: int = 20,
+    service: {{ model_name }}Service = Depends(get_service),
+) -> JSONResponse:
+    items, meta = await service.paginate(page=page, per_page=per_page)
+    return success_response(data=items, meta=meta)
+
+
+@router.get("/{id}", response_model={{ model_name }}Response)
+async def show(
+    id: int,
+    service: {{ model_name }}Service = Depends(get_service),
+) -> JSONResponse:
+    item = await service.find_or_fail(id)
+    return success_response(data=item)
+
+
+@router.post("/", response_model={{ model_name }}Response, status_code=status.HTTP_201_CREATED)
+async def store(
+    data: dict,
+    service: {{ model_name }}Service = Depends(get_service),
+) -> JSONResponse:
+    try:
+        payload = {{ model_name }}Create(**data)
+        item = await service.create(payload)
+        return success_response(data=item, status_code=status.HTTP_201_CREATED)
+    except ValidationError as e:
+        errors = format_validation_errors(e.errors())
+        return error_response(message=_('validation.failed'), errors=errors, status_code=422)
+
+
+@router.put("/{id}", response_model={{ model_name }}Response)
+async def update(
+    id: int,
+    data: dict,
+    service: {{ model_name }}Service = Depends(get_service),
+) -> JSONResponse:
+    try:
+        payload = {{ model_name }}Update(**data)
+        item = await service.update(id, payload)
+        return success_response(data=item)
+    except ValidationError as e:
+        errors = format_validation_errors(e.errors())
+        return error_response(message=_('validation.failed'), errors=errors, status_code=422)
+
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def destroy(
+    id: int,
+    service: {{ model_name }}Service = Depends(get_service),
+) -> None:
+    await service.delete(id)
