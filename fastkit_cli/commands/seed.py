@@ -3,7 +3,7 @@ import typer
 app = typer.Typer(help="Database seeding commands.")
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def seed(seeder: str = typer.Argument(None, help="Specific seeder class to run")):
     """Run database seeders."""
     if seeder:
