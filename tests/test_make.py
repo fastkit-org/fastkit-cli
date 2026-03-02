@@ -472,3 +472,36 @@ class TestMakeModelCommand:
 
         assert (tmp_path / "models.py").read_text() == "# generated"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI: fastkit make schema
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestMakeSchemaCommand:
+    def test_generates_schema_file(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["schema", "Invoice", "--path", str(tmp_path)])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "schemas.py").exists()
+
+    def test_uses_correct_template(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render:
+            runner.invoke(app, ["schema", "Invoice", "--path", str(tmp_path)])
+
+        assert mock_render.call_args.args[0] == "schemas.py.jinja"
+
+    def test_skips_existing_without_force(self, tmp_path):
+        (tmp_path / "schemas.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            runner.invoke(app, ["schema", "Invoice", "--path", str(tmp_path)])
+
+        assert (tmp_path / "schemas.py").read_text() == "# original"
+
+    def test_overwrites_with_force(self, tmp_path):
+        (tmp_path / "schemas.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            runner.invoke(app, ["schema", "Invoice", "--path", str(tmp_path), "--force"])
+
+        assert (tmp_path / "schemas.py").read_text() == "# generated"
