@@ -113,3 +113,42 @@ class TestToPascalCase:
 
     def test_three_word_snake(self):
         assert _to_pascal_case("user_profile_settings") == "UserProfileSettings"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# _build_context
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestBuildContext:
+    def test_invoice_pascal_input(self):
+        ctx = _build_context("Invoice")
+        assert ctx["model_name"] == "Invoice"
+        assert ctx["snake_name"] == "invoice"
+        assert ctx["table_name"] == "invoices"
+        assert ctx["module_folder"] == "invoices"
+
+    def test_snake_case_input(self):
+        ctx = _build_context("invoice_item")
+        assert ctx["model_name"] == "InvoiceItem"
+        assert ctx["snake_name"] == "invoice_item"
+        assert ctx["table_name"] == "invoice_items"
+
+    def test_lowercase_input(self):
+        ctx = _build_context("user")
+        assert ctx["model_name"] == "User"
+        assert ctx["snake_name"] == "user"
+        assert ctx["table_name"] == "users"
+
+    def test_category_pluralization(self):
+        ctx = _build_context("Category")
+        assert ctx["table_name"] == "categories"
+
+    def test_context_has_all_required_keys(self):
+        ctx = _build_context("Invoice")
+        assert set(ctx.keys()) == {"model_name", "snake_name", "table_name", "module_folder"}
+
+    def test_module_folder_always_equals_table_name(self):
+        for name in ["Invoice", "Category", "InvoiceItem", "User"]:
+            ctx = _build_context(name)
+            assert ctx["module_folder"] == ctx["table_name"]
+
