@@ -12,3 +12,8 @@ dependencies = [
 
 [project.scripts]
 fastkit = "fastkit_cli.main:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
