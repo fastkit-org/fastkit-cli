@@ -152,3 +152,74 @@ class TestBuildContext:
             ctx = _build_context(name)
             assert ctx["module_folder"] == ctx["table_name"]
 
+# ─────────────────────────────────────────────────────────────────────────────
+# _render_and_write
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestRenderAndWrite:
+    def test_creates_new_file(self, tmp_path):
+        output_path = tmp_path / "models.py"
+        context = _build_context("Invoice")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            _render_and_write("model.py.jinja", output_path, context)
+
+        assert output_path.exists()
+        assert output_path.read_text() == "# generated"
+
+    def test_skips_existing_file_by_default(self, tmp_path):
+        output_path = tmp_path / "models.py"
+        output_path.write_text("# original")
+        skipped = []
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            _render_and_write("model.py.jinja", output_path, _build_context("Invoice"), skipped=skipped)
+
+        assert output_path.read_text() == "# original"
+        assert "models.py" in skipped
+
+    def test_overwrites_with_force(self, tmp_path):
+        output_path = tmp_path / "models.py"
+        output_path.write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            _render_and_write("model.py.jinja", output_path, _build_context("Invoice"), force=True)
+
+        assert output_path.read_text() == "# generated"
+
+    def test_handles_render_exception_gracefully(self, tmp_path):
+        output_path = tmp_path / "models.py"
+
+        with patch("fastkit_cli.commands.make._render_template", side_effect=Exception("Template error")):
+            _render_and_write("model.py.jinja", output_path, _build_context("Invoice"))
+
+        assert not output_path.exists()
+
+    def test_skipped_list_unchanged_when_file_written(self, tmp_path):
+        output_path = tmp_path / "models.py"
+        skipped = []
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            _render_and_write("model.py.jinja", output_path, _build_context("Invoice"), skipped=skipped)
+
+        assert skipped == []
+
+    def test_skipped_none_does_not_raise_on_existing_file(self, tmp_path):
+        output_path = tmp_path / "models.py"
+        output_path.write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            _render_and_write("model.py.jinja", output_path, _build_context("Invoice"), force=False, skipped=None)
+
+        assert output_path.read_text() == "# original"
+
+    def test_passes_correct_context_to_render(self, tmp_path):
+        output_path = tmp_path / "models.py"
+        context = _build_context("Invoice")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# ok") as mock_render:
+            _render_and_write("model.py.jinja", output_path, context)
+
+        mock_render.assert_called_once_with("model.py.jinja", context)
+
+
