@@ -417,3 +417,58 @@ class TestMakeModuleCommand:
         assert "models.py" in result.output
         assert "schemas.py" in result.output
         assert "migrate make" in result.output
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI: fastkit make model
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestMakeModelCommand:
+    def test_generates_model_file(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"), \
+             patch("fastkit_cli.commands.make._register_in_alembic"):
+            result = runner.invoke(app, ["model", "Invoice", "--path", str(tmp_path)])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "models.py").exists()
+
+    def test_uses_correct_template(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render, \
+             patch("fastkit_cli.commands.make._register_in_alembic"):
+            runner.invoke(app, ["model", "Invoice", "--path", str(tmp_path)])
+
+        assert mock_render.call_args.args[0] == "model.py.jinja"
+
+    def test_passes_correct_context(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render, \
+             patch("fastkit_cli.commands.make._register_in_alembic"):
+            runner.invoke(app, ["model", "Invoice", "--path", str(tmp_path)])
+
+        context = mock_render.call_args.args[1]
+        assert context["model_name"] == "Invoice"
+        assert context["table_name"] == "invoices"
+
+    def test_registers_in_alembic(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"), \
+             patch("fastkit_cli.commands.make._register_in_alembic") as mock_alembic:
+            runner.invoke(app, ["model", "Invoice", "--path", str(tmp_path)])
+
+        mock_alembic.assert_called_once_with("Invoice", "invoices")
+
+    def test_skips_existing_without_force(self, tmp_path):
+        (tmp_path / "models.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"), \
+             patch("fastkit_cli.commands.make._register_in_alembic"):
+            runner.invoke(app, ["model", "Invoice", "--path", str(tmp_path)])
+
+        assert (tmp_path / "models.py").read_text() == "# original"
+
+    def test_overwrites_with_force(self, tmp_path):
+        (tmp_path / "models.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"), \
+             patch("fastkit_cli.commands.make._register_in_alembic"):
+            runner.invoke(app, ["model", "Invoice", "--path", str(tmp_path), "--force"])
+
+        assert (tmp_path / "models.py").read_text() == "# generated"
+
