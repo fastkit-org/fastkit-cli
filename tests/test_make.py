@@ -222,4 +222,86 @@ class TestRenderAndWrite:
 
         mock_render.assert_called_once_with("model.py.jinja", context)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# _register_in_alembic
+# ─────────────────────────────────────────────────────────────────────────────
 
+class TestRegisterInAlembic:
+    def test_registers_in_alembic_folder(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "alembic").mkdir()
+        env_py = tmp_path / "alembic" / "env.py"
+        env_py.write_text("target_metadata = Base.metadata\n")
+
+        _register_in_alembic("Invoice", "invoices")
+
+        assert "from modules.invoices.models import Invoice  # noqa" in env_py.read_text()
+
+    def test_registers_in_migrations_folder(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "migrations").mkdir()
+        env_py = tmp_path / "migrations" / "env.py"
+        env_py.write_text("target_metadata = Base.metadata\n")
+
+        _register_in_alembic("Invoice", "invoices")
+
+        assert "from modules.invoices.models import Invoice  # noqa" in env_py.read_text()
+
+    def test_prefers_alembic_over_migrations(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        for folder in ["alembic", "migrations"]:
+            (tmp_path / folder).mkdir()
+            (tmp_path / folder / "env.py").write_text("target_metadata = Base.metadata\n")
+
+        _register_in_alembic("Invoice", "invoices")
+
+        assert "from modules.invoices.models import Invoice  # noqa" in (tmp_path / "alembic" / "env.py").read_text()
+        assert "from modules.invoices.models import Invoice  # noqa" not in (tmp_path / "migrations" / "env.py").read_text()
+
+    def test_skips_duplicate_registration(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "alembic").mkdir()
+        import_line = "from modules.invoices.models import Invoice  # noqa"
+        env_py = tmp_path / "alembic" / "env.py"
+        env_py.write_text(f"{import_line}\ntarget_metadata = Base.metadata\n")
+
+        _register_in_alembic("Invoice", "invoices")
+
+        assert env_py.read_text().count(import_line) == 1
+
+    def test_import_placed_before_target_metadata(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "alembic").mkdir()
+        env_py = tmp_path / "alembic" / "env.py"
+        env_py.write_text("target_metadata = Base.metadata\n")
+
+        _register_in_alembic("Invoice", "invoices")
+
+        content = env_py.read_text()
+        import_pos = content.index("from modules.invoices.models")
+        metadata_pos = content.index("target_metadata")
+        assert import_pos < metadata_pos
+
+    def test_warns_when_no_env_py_found(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        _register_in_alembic("Invoice", "invoices")  # Ne sme da baci exception
+
+    def test_does_not_modify_file_when_marker_missing(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "alembic").mkdir()
+        env_py = tmp_path / "alembic" / "env.py"
+        env_py.write_text("# no marker here\n")
+
+        _register_in_alembic("Invoice", "invoices")
+
+        assert "from modules" not in env_py.read_text()
+
+    def test_registers_compound_model_name(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "alembic").mkdir()
+        env_py = tmp_path / "alembic" / "env.py"
+        env_py.write_text("target_metadata = Base.metadata\n")
+
+        _register_in_alembic("InvoiceItem", "invoice_items")
+
+        assert "from modules.invoice_items.models import InvoiceItem  # noqa" in env_py.read_text()
