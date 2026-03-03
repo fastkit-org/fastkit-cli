@@ -1,4 +1,12 @@
-# FastKit CLI
+<div align="center">
+  <h1>FastKit CLI</h1>
+  
+  [![PyPI version](https://badge.fury.io/py/fastkit-cli.svg)](https://pypi.org/project/fastkit-cli/)
+  [![Python 3.11+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+  [![CI](https://github.com/codevelo-pub/fastkit-core/actions/workflows/tests.yml/badge.svg)](https://github.com/codevelo-pub/fastkit-cli/actions/workflows/tests.yml)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+</div>
+
 
 **FastAPI with structure and developer experience.**
 
