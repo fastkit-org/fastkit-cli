@@ -4,26 +4,6 @@ version = "0.1.0"
 description = "FastKit CLI is a code generation tool for the fastkit core packge."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "fastkit-core>=0.3.5",
-    "jinja2>=3.1.6",
-    "typer>=0.24.1",
-]
-
-[project.scripts]
-fastkit = "fastkit_cli.main:app"
-
-
-[project.urls]
-Homepage = "https://github.com/codevelo-pub/fastkit-cli"
-Documentation = "https://github.com/codevelo-pub/fastkit-cli#readme"
-Repository = "https://github.com/codevelo-pub/fastkit-cli"
-
-[dependency-groups]
-dev = [
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
-]
 license = {text = "MIT"}
 authors = [
     {name = "Codevelo", email = "info@codevelo.io"}
@@ -52,3 +32,24 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "fastkit-core>=0.3.5",
+    "jinja2>=3.1.6",
+    "typer>=0.24.1",
+]
+
+[project.scripts]
+fastkit = "fastkit_cli.main:app"
+
+
+[project.urls]
+Homepage = "https://github.com/codevelo-pub/fastkit-cli"
+Documentation = "https://github.com/codevelo-pub/fastkit-cli#readme"
+Repository = "https://github.com/codevelo-pub/fastkit-cli"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+]
+
