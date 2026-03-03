@@ -1,7 +1,7 @@
 [project]
 name = "fastkit-cli"
 version = "0.1.0"
-description = "CLI for fastkit-core"
+description = "FastKit CLI is a code generation tool for the fastkit core packge."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,6 +12,12 @@ dependencies = [
 
 [project.scripts]
 fastkit = "fastkit_cli.main:app"
+
+
+[project.urls]
+Homepage = "https://github.com/codevelo-pub/fastkit-cli"
+Documentation = "https://github.com/codevelo-pub/fastkit-cli#readme"
+Repository = "https://github.com/codevelo-pub/fastkit-cli"
 
 [dependency-groups]
 dev = [
