@@ -1,7 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "fastkit-cli"
-version = "0.1.2"
-description = "FastKit CLI is a code generation tool for the fastkit core packge."
+version = "0.1.3"
+description = "FastKit CLI is a code generation tool for the fastkit core package."
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
@@ -39,11 +43,24 @@ dependencies = [
 [project.scripts]
 fastkit = "fastkit_cli.main:app"
 
-
 [project.urls]
 Homepage = "https://github.com/codevelo-pub/fastkit-cli"
 Documentation = "https://github.com/codevelo-pub/fastkit-cli#readme"
 Repository = "https://github.com/codevelo-pub/fastkit-cli"
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "fastkit_cli/**/*.py",
+    "fastkit_cli/templates/**/*.jinja",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "fastkit_cli/**/*.py",
+    "fastkit_cli/templates/**/*.jinja",
+    "README.md",
+    "LICENSE",
+]
 
 [dependency-groups]
 dev = [
@@ -51,3 +68,6 @@ dev = [
     "pytest-cov>=7.0.0",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+verbosity = 1
