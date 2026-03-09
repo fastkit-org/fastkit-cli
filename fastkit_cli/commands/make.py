@@ -118,6 +118,10 @@ def _print_skipped(skipped: list) -> None:
             fg=typer.colors.YELLOW,
         )
 
+def _make_init_file(file, force: bool) -> None:
+    if not file.exists() or force:
+        file.write_text("")
+        typer.secho("  ✓  __init__.py", fg=typer.colors.GREEN)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Commands
@@ -152,10 +156,11 @@ def module(
 
     module_path.mkdir(parents=True, exist_ok=True)
 
+    module_dir_init = Path(modules_dir) / "__init__.py"
+    _make_init_file(module_dir_init, force)
+
     init_file = module_path / "__init__.py"
-    if not init_file.exists() or force:
-        init_file.write_text("")
-        typer.secho("  ✓  __init__.py", fg=typer.colors.GREEN)
+    _make_init_file(init_file, force)
 
     templates = [
         ("model.py.jinja", "models.py"),
