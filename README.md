@@ -375,16 +375,6 @@ fastkit server --no-reload
 
 ---
 
-## new
-
-Create a new FastKit project from a template.
-
-```bash
-fastkit new my-project
-```
-
----
-
 ## Naming Conventions
 
 FastKit CLI automatically handles naming conversions regardless of how you pass the module name:
@@ -439,6 +429,6 @@ FastKit Core is open-source software licensed under the [MIT License](https://op
 
 ---
 
-## Built by CodeVelo
+## Built by Fastkit.org
 
-FastKit is developed and maintained by [Codevelo](https://codevelo.io) for the FastAPI community.
+FastKit is developed and maintained by [Fastkit.org](https://fastkit.org) for the FastAPI community.
