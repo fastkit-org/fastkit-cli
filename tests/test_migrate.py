@@ -78,3 +78,31 @@ class TestMigrateMake:
 
         assert result.exit_code == 1
         assert "alembic not found" in result.output
+
+class TestMigrateRollback:
+    def test_rollback_exits_successfully(self):
+        with patch("fastkit_cli.commands.migrate.subprocess.run"):
+            result = runner.invoke(app, ["rollback"])
+
+        assert result.exit_code == 0
+
+    def test_rollback_output(self):
+        with patch("fastkit_cli.commands.migrate.subprocess.run"):
+            result = runner.invoke(app, ["rollback"])
+
+        assert "rollback" in result.output.lower()
+
+    def test_rollback_calls_alembic_downgrade(self):
+        with patch("fastkit_cli.commands.migrate.subprocess.run") as mock_run:
+            runner.invoke(app, ["rollback"])
+
+        cmd = mock_run.call_args.args[0]
+        assert "downgrade" in cmd
+        assert "-1" in cmd
+
+    def test_rollback_alembic_not_found_exits_with_error(self):
+        with patch("fastkit_cli.commands.migrate.subprocess.run", side_effect=FileNotFoundError):
+            result = runner.invoke(app, ["rollback"])
+
+        assert result.exit_code == 1
+        assert "alembic not found" in result.output
