@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fastkit-cli"
-version = "0.1.4"
+version = "0.1.5"
 description = "FastKit CLI is a code generation tool for the fastkit core package."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -39,7 +39,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "typer>=0.24.1",
     "uvicorn>=0.34.0",
-    "alembic>=2.0.0",
+    "alembic",
 ]
 
 [project.scripts]
