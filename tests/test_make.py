@@ -53,6 +53,39 @@ class TestToSnakeCase:
         assert _to_snake_case("invoiceItem") == "invoice_item"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# _to_pascal_case
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestToPascalCase:
+    def test_snake_case_to_pascal(self):
+        assert _to_pascal_case("invoice_item") == "InvoiceItem"
+
+    def test_already_pascal_case(self):
+        assert _to_pascal_case("Invoice") == "Invoice"
+
+    def test_lowercase_single_word(self):
+        assert _to_pascal_case("invoice") == "Invoice"
+
+    def test_words_with_spaces(self):
+        assert _to_pascal_case("invoice item") == "InvoiceItem"
+
+    def test_words_with_hyphens(self):
+        assert _to_pascal_case("invoice-item") == "InvoiceItem"
+
+    def test_three_word_snake(self):
+        assert _to_pascal_case("user_profile_settings") == "UserProfileSettings"
+
+    def test_pascal_case_input_preserved(self):
+        assert _to_pascal_case("InvoiceItems") == "InvoiceItems"
+
+    def test_pascal_case_compound_preserved(self):
+        assert _to_pascal_case("InvoiceItem") == "InvoiceItem"
+
+    def test_pascal_case_three_words_preserved(self):
+        assert _to_pascal_case("UserProfileSettings") == "UserProfileSettings"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # _to_plural
 # ─────────────────────────────────────────────────────────────────────────────
 

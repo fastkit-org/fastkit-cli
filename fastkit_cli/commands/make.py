@@ -20,6 +20,9 @@ def _to_snake_case(name: str) -> str:
 
 
 def _to_pascal_case(name: str) -> str:
+    # If already PascalCase (contains uppercase mid-word), convert to snake first to normalize
+    if re.search(r'[a-z][A-Z]', name):
+        name = _to_snake_case(name)
     return ''.join(word.capitalize() for word in re.split(r'[_\s-]', name))
 
 
