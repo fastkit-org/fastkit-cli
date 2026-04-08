@@ -2,6 +2,8 @@ from typing import Any
 from pydantic import Field
 from fastkit_core.validation import (
     BaseSchema,
+    BaseCreateSchema,
+    BaseUpdateSchema,
     # min_length,       # Uncomment for string min length: name: str = min_length(3)
     # max_length,       # Uncomment for string max length: name: str = max_length(100)
     # length,           # Uncomment for string length range: name: str = length(3, 100)
@@ -16,7 +18,7 @@ from fastkit_core.validation import (
 )
 
 
-class {{ model_name }}Create(BaseSchema):
+class {{ model_name }}Create(BaseCreateSchema):
     """
     Schema for creating a new {{ model_name }}.
 
@@ -31,7 +33,7 @@ class {{ model_name }}Create(BaseSchema):
     pass  # Replace with actual fields
 
 
-class {{ model_name }}Update(BaseSchema):
+class {{ model_name }}Update(BaseUpdateSchema):
     """
     Schema for updating an existing {{ model_name }}.
 
@@ -61,5 +63,3 @@ class {{ model_name }}Response(BaseSchema):
     # description: str | None = None
     created_at: Any = None
     updated_at: Any = None
-
-    model_config = {"from_attributes": True}
