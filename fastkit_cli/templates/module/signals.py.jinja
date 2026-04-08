@@ -1,0 +1,24 @@
+# {{ table_name }}/signals.py
+#
+# Define module-level Signal instances here.
+# Import these in listeners.py to connect receivers.
+# Import these in service.py to send signals from lifecycle hooks.
+#
+# Signal name convention: 'module_name.event_name'
+# Each Signal instance is independent — receivers connect to the object,
+# not to the name string. Always import from this file, never create new instances.
+#
+# Usage:
+#     from .signals import {{ snake_name }}_created, {{ snake_name }}_updated, {{ snake_name }}_deleted
+
+from fastkit_core.events import Signal
+
+__all__ = [
+    '{{ snake_name }}_created',
+    '{{ snake_name }}_updated',
+    '{{ snake_name }}_deleted',
+]
+
+{{ snake_name }}_created = Signal('{{ snake_name }}.created')
+{{ snake_name }}_updated = Signal('{{ snake_name }}.updated')
+{{ snake_name }}_deleted = Signal('{{ snake_name }}.deleted')
