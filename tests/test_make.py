@@ -632,3 +632,210 @@ class TestAsyncCapableCommands:
             runner.invoke(app, [command, "Invoice", "--path", str(tmp_path), "--force"])
 
         assert (tmp_path / output_file).read_text() == "# generated"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI: fastkit make signals
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestMakeSignalsCommand:
+
+    # ── File generation ───────────────────────────────────────────────────────
+
+    def test_generates_signals_file(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "signals.py").exists()
+
+    def test_generates_listeners_file(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "listeners.py").exists()
+
+    def test_generates_both_files_in_single_call(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert (tmp_path / "signals.py").exists()
+        assert (tmp_path / "listeners.py").exists()
+
+    def test_uses_signals_template(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render:
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        templates = [c.args[0] for c in mock_render.call_args_list]
+        assert "signals.py.jinja" in templates
+
+    def test_uses_listeners_template(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render:
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        templates = [c.args[0] for c in mock_render.call_args_list]
+        assert "listeners.py.jinja" in templates
+
+    def test_does_not_generate_other_files(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        for unwanted in ["models.py", "schemas.py", "repository.py", "service.py", "router.py"]:
+            assert not (tmp_path / unwanted).exists(), f"Unexpected file generated: {unwanted}"
+
+    # ── Context variables ─────────────────────────────────────────────────────
+
+    def test_passes_correct_context(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render:
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        # Both calls receive the same context
+        for call in mock_render.call_args_list:
+            context = call.args[1]
+            assert context["model_name"] == "Invoice"
+            assert context["snake_name"] == "invoice"
+            assert context["table_name"] == "invoices"
+
+    def test_compound_name_context(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated") as mock_render:
+            runner.invoke(app, ["signals", "InvoiceItem", "--path", str(tmp_path)])
+
+        context = mock_render.call_args_list[0].args[1]
+        assert context["model_name"] == "InvoiceItem"
+        assert context["snake_name"] == "invoice_item"
+        assert context["table_name"] == "invoice_items"
+
+    # ── --path option ─────────────────────────────────────────────────────────
+
+    def test_default_path_is_current_directory(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice"])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "signals.py").exists()
+        assert (tmp_path / "listeners.py").exists()
+
+    def test_custom_path_option(self, tmp_path):
+        target = tmp_path / "modules" / "invoices"
+        target.mkdir(parents=True)
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(target)])
+
+        assert result.exit_code == 0
+        assert (target / "signals.py").exists()
+        assert (target / "listeners.py").exists()
+
+    def test_short_path_flag(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "-p", str(tmp_path)])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "signals.py").exists()
+
+    # ── Skip / force behavior ─────────────────────────────────────────────────
+
+    def test_skips_existing_signals_without_force(self, tmp_path):
+        (tmp_path / "signals.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert (tmp_path / "signals.py").read_text() == "# original"
+        assert "Skipped" in result.output
+
+    def test_skips_existing_listeners_without_force(self, tmp_path):
+        (tmp_path / "listeners.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert (tmp_path / "listeners.py").read_text() == "# original"
+        assert "Skipped" in result.output
+
+    def test_force_overwrites_signals(self, tmp_path):
+        (tmp_path / "signals.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path), "--force"])
+
+        assert (tmp_path / "signals.py").read_text() == "# generated"
+
+    def test_force_overwrites_listeners(self, tmp_path):
+        (tmp_path / "listeners.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path), "--force"])
+
+        assert (tmp_path / "listeners.py").read_text() == "# generated"
+
+    def test_force_overwrites_both_files(self, tmp_path):
+        (tmp_path / "signals.py").write_text("# original signals")
+        (tmp_path / "listeners.py").write_text("# original listeners")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path), "--force"])
+
+        assert result.exit_code == 0
+        assert (tmp_path / "signals.py").read_text() == "# generated"
+        assert (tmp_path / "listeners.py").read_text() == "# generated"
+        assert "Skipped" not in result.output
+
+    def test_skip_count_reported_when_both_exist(self, tmp_path):
+        (tmp_path / "signals.py").write_text("# original")
+        (tmp_path / "listeners.py").write_text("# original")
+
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert "Skipped 2" in result.output
+
+    # ── Terminal output ───────────────────────────────────────────────────────
+
+    def test_output_shows_model_name(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert "Invoice" in result.output
+
+    def test_output_shows_location(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert str(tmp_path) in result.output
+
+    def test_output_contains_done(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert "Done" in result.output
+
+    def test_output_contains_listeners_import_instruction(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert "import modules.invoices.listeners" in result.output
+
+    def test_output_import_instruction_uses_correct_table_name(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Category", "--path", str(tmp_path)])
+
+        assert "import modules.categories.listeners" in result.output
+
+    def test_exit_code_zero_on_success(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"):
+            result = runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        assert result.exit_code == 0
+
+    # ── Does not call alembic ─────────────────────────────────────────────────
+
+    def test_does_not_call_register_in_alembic(self, tmp_path):
+        with patch("fastkit_cli.commands.make._render_template", return_value="# generated"), \
+             patch("fastkit_cli.commands.make._register_in_alembic") as mock_alembic:
+            runner.invoke(app, ["signals", "Invoice", "--path", str(tmp_path)])
+
+        mock_alembic.assert_not_called()
