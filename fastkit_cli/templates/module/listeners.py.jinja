@@ -1,0 +1,56 @@
+# {{ table_name }}/listeners.py
+#
+# Connect receivers to signals using the @signal.connect decorator.
+#
+# IMPORTANT: This file must be imported at application startup for receivers
+# to be registered. Without the import the decorators never run and no
+# receiver will respond to any signal — no error, just silence.
+#
+# Add this to your main.py lifespan or application factory:
+#     import modules.{{ table_name }}.listeners
+#
+from .signals import {{ snake_name }}_created, {{ snake_name }}_updated, {{ snake_name }}_deleted
+
+
+# Uncomment and implement the receivers you need.
+# Each receiver is an async function that accepts the signal payload as a dict.
+# Receiver exceptions are caught and logged — they never propagate to the caller.
+
+
+# @{{ snake_name }}_created.connect
+# async def on_{{ snake_name }}_created(payload: dict) -> None:
+#     """
+#     Called after a {{ model_name }} is successfully created and committed.
+#
+#     Payload keys sent by the service (add your own in after_create):
+#         id: int
+#
+#     Common uses: send notification, invalidate cache, update search index.
+#     """
+#     pass
+
+
+# @{{ snake_name }}_updated.connect
+# async def on_{{ snake_name }}_updated(payload: dict) -> None:
+#     """
+#     Called after a {{ model_name }} is successfully updated and committed.
+#
+#     Payload keys sent by the service (add your own in after_update):
+#         id: int
+#
+#     Common uses: invalidate cache entry, sync external system.
+#     """
+#     pass
+
+
+# @{{ snake_name }}_deleted.connect
+# async def on_{{ snake_name }}_deleted(payload: dict) -> None:
+#     """
+#     Called after a {{ model_name }} is successfully deleted and committed.
+#
+#     Payload keys sent by the service (add your own in after_delete):
+#         id: int
+#
+#     Common uses: delete related files, revoke tokens, release resources.
+#     """
+#     pass
