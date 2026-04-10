@@ -121,6 +121,7 @@ def _print_skipped(skipped: list) -> None:
             fg=typer.colors.YELLOW,
         )
 
+
 def _make_init_file(file, force: bool) -> None:
     if not file.exists() or force:
         file.write_text("")
@@ -136,6 +137,7 @@ def module(
     modules_dir: str = typer.Option("modules", "--dir", "-d", help="Modules root directory"),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
     async_mode: bool = typer.Option(False, "--async", "-a", help="Use async repository and service"),
+    signals: bool = typer.Option(False, "--signals", "-s", help="Also generate signals.py and listeners.py"),
 ):
     """
     Generate a new module with model, schemas, repository, and service.
@@ -154,7 +156,15 @@ def module(
     typer.echo(f"  Location : {module_path}/")
     typer.echo(f"  Model    : {context['model_name']}")
     typer.echo(f"  Table    : {context['table_name']}")
-    typer.echo(f"  Mode     : {'async' if async_mode else 'sync'}")
+    if async_mode and signals:
+        mode = "async + signals"
+    elif async_mode:
+        mode = "async"
+    elif signals:
+        mode = "sync + signals"
+    else:
+        mode = "sync"
+    typer.echo(f"  Mode     : {mode}")
     typer.echo("")
 
     module_path.mkdir(parents=True, exist_ok=True)
@@ -172,6 +182,12 @@ def module(
         ("async_service.py.jinja" if async_mode else "service.py.jinja", "service.py"),
         ("async_router.py.jinja" if async_mode else "router.py.jinja", "router.py"),
     ]
+
+    if signals:
+        templates += [
+            ("signals.py.jinja", "signals.py"),
+            ("listeners.py.jinja", "listeners.py"),
+        ]
 
     skipped: list = []
     for template_name, output_filename in templates:
@@ -193,6 +209,11 @@ def module(
     typer.echo(f"  1. Define your fields in  {module_path}/models.py")
     typer.echo(f"  2. Add schemas in          {module_path}/schemas.py")
     typer.echo(f"  3. Run: fastkit migrate make -m 'create_{context['table_name']}'")
+
+    if signals:
+        typer.echo(f"  4. Import listeners in main.py:")
+        typer.echo(f"       import modules.{context['table_name']}.listeners")
+
     typer.echo("")
 
 
@@ -372,4 +393,49 @@ def router(
 
     typer.echo("")
     typer.secho("Done!", fg=typer.colors.BRIGHT_WHITE, bold=True)
+    typer.echo("")
+
+@app.command()
+def signals(
+    name: str = typer.Argument(..., help="Module name in PascalCase (e.g. Invoice)"),
+    path: str = typer.Option(".", "--path", "-p", help="Path to target directory"),
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
+):
+    """
+    Generate signals.py and listeners.py for an existing module.
+
+    \b
+    Example:
+        fastkit make signals Invoice
+        fastkit make signals Invoice --path modules/invoices
+    """
+    context = _build_context(name)
+    module_path = Path(path)
+
+    typer.echo("")
+    typer.secho(f"Generating signals: {context['model_name']}", fg=typer.colors.BRIGHT_CYAN, bold=True)
+    typer.echo(f"  Location : {module_path}/")
+    typer.echo("")
+
+    skipped: list = []
+
+    for template_name, output_filename in [
+        ("signals.py.jinja",   "signals.py"),
+        ("listeners.py.jinja", "listeners.py"),
+    ]:
+        _render_and_write(
+            template_name=template_name,
+            output_path=module_path / output_filename,
+            context=context,
+            force=force,
+            skipped=skipped,
+        )
+
+    _print_skipped(skipped)
+
+    typer.echo("")
+    typer.secho("Done! Next steps:", fg=typer.colors.BRIGHT_WHITE, bold=True)
+    typer.echo(f"  1. Implement receivers in  {module_path}/listeners.py")
+    typer.echo(f"  2. Import listeners in main.py:")
+    typer.echo(f"       import modules.{context['table_name']}.listeners")
     typer.echo("")
