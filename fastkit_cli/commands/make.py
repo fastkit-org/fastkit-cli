@@ -394,3 +394,48 @@ def router(
     typer.echo("")
     typer.secho("Done!", fg=typer.colors.BRIGHT_WHITE, bold=True)
     typer.echo("")
+
+@app.command()
+def signals(
+    name: str = typer.Argument(..., help="Module name in PascalCase (e.g. Invoice)"),
+    path: str = typer.Option(".", "--path", "-p", help="Path to target directory"),
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
+):
+    """
+    Generate signals.py and listeners.py for an existing module.
+
+    \b
+    Example:
+        fastkit make signals Invoice
+        fastkit make signals Invoice --path modules/invoices
+    """
+    context = _build_context(name)
+    module_path = Path(path)
+
+    typer.echo("")
+    typer.secho(f"Generating signals: {context['model_name']}", fg=typer.colors.BRIGHT_CYAN, bold=True)
+    typer.echo(f"  Location : {module_path}/")
+    typer.echo("")
+
+    skipped: list = []
+
+    for template_name, output_filename in [
+        ("signals.py.jinja",   "signals.py"),
+        ("listeners.py.jinja", "listeners.py"),
+    ]:
+        _render_and_write(
+            template_name=template_name,
+            output_path=module_path / output_filename,
+            context=context,
+            force=force,
+            skipped=skipped,
+        )
+
+    _print_skipped(skipped)
+
+    typer.echo("")
+    typer.secho("Done! Next steps:", fg=typer.colors.BRIGHT_WHITE, bold=True)
+    typer.echo(f"  1. Implement receivers in  {module_path}/listeners.py")
+    typer.echo(f"  2. Import listeners in main.py:")
+    typer.echo(f"       import modules.{context['table_name']}.listeners")
+    typer.echo("")
