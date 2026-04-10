@@ -121,6 +121,7 @@ def _print_skipped(skipped: list) -> None:
             fg=typer.colors.YELLOW,
         )
 
+
 def _make_init_file(file, force: bool) -> None:
     if not file.exists() or force:
         file.write_text("")
@@ -155,7 +156,15 @@ def module(
     typer.echo(f"  Location : {module_path}/")
     typer.echo(f"  Model    : {context['model_name']}")
     typer.echo(f"  Table    : {context['table_name']}")
-    typer.echo(f"  Mode     : {'async' if async_mode else 'sync'}")
+    if async_mode and signals:
+        mode = "async + signals"
+    elif async_mode:
+        mode = "async"
+    elif signals:
+        mode = "sync + signals"
+    else:
+        mode = "sync"
+    typer.echo(f"  Mode     : {mode}")
     typer.echo("")
 
     module_path.mkdir(parents=True, exist_ok=True)
@@ -202,7 +211,8 @@ def module(
     typer.echo(f"  3. Run: fastkit migrate make -m 'create_{context['table_name']}'")
 
     if signals:
-        typer.echo(f"  4.Import listeners in main.py: import modules.{context['table_name']}.listeners")
+        typer.echo(f"  4. Import listeners in main.py:")
+        typer.echo(f"       import modules.{context['table_name']}.listeners")
 
     typer.echo("")
 
