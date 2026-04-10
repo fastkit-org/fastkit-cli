@@ -136,6 +136,7 @@ def module(
     modules_dir: str = typer.Option("modules", "--dir", "-d", help="Modules root directory"),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
     async_mode: bool = typer.Option(False, "--async", "-a", help="Use async repository and service"),
+    signals: bool = typer.Option(False, "--signals", "-s", help="Also generate signals.py and listeners.py"),
 ):
     """
     Generate a new module with model, schemas, repository, and service.
@@ -173,6 +174,12 @@ def module(
         ("async_router.py.jinja" if async_mode else "router.py.jinja", "router.py"),
     ]
 
+    if signals:
+        templates += [
+            ("signals.py.jinja", "signals.py"),
+            ("listeners.py.jinja", "listeners.py"),
+        ]
+
     skipped: list = []
     for template_name, output_filename in templates:
         _render_and_write(
@@ -193,6 +200,10 @@ def module(
     typer.echo(f"  1. Define your fields in  {module_path}/models.py")
     typer.echo(f"  2. Add schemas in          {module_path}/schemas.py")
     typer.echo(f"  3. Run: fastkit migrate make -m 'create_{context['table_name']}'")
+
+    if signals:
+        typer.echo(f"  4.Import listeners in main.py: import modules.{context['table_name']}.listeners")
+
     typer.echo("")
 
 
