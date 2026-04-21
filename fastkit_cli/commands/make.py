@@ -3,6 +3,9 @@ from pathlib import Path
 
 import typer
 from jinja2 import Environment, FileSystemLoader
+import inflect
+
+_inflect = inflect.engine()
 
 app = typer.Typer(help="Code generation commands.")
 
@@ -25,26 +28,30 @@ def _to_pascal_case(name: str) -> str:
         name = _to_snake_case(name)
     return ''.join(word.capitalize() for word in re.split(r'[_\s-]', name))
 
+def _to_singular(name: str) -> str:
+    """Normalize to singular form. Returns unchanged if already singular."""
+    singular = _inflect.singular_noun(name)
+    return singular if singular else name
 
 def _to_plural(name: str) -> str:
-    if name.endswith('y') and not name.endswith(('ay', 'ey', 'iy', 'oy', 'uy')):
-        return name[:-1] + 'ies'
-    if name.endswith(('s', 'sh', 'ch', 'x', 'z')):
-        return name + 'es'
-    return name + 's'
-
+    if _inflect.singular_noun(name):  # returns False if already plural
+        return name
+    return _inflect.plural_noun(name)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Shared Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _build_context(name: str) -> dict:
-    model_name = _to_pascal_case(name)
-    snake_name = _to_snake_case(model_name)
-    table_name = _to_plural(snake_name)
+    snake_name = _to_snake_case(name)
+    singular_snake = _to_singular(snake_name)
+
+    model_name = _to_pascal_case(singular_snake)
+    table_name = _to_plural(singular_snake)
+
     return {
         "model_name": model_name,
-        "snake_name": snake_name,
+        "snake_name": singular_snake,
         "table_name": table_name,
         "module_folder": table_name,
     }
