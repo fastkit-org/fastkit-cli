@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 FastKit CLI follows [Semantic Versioning](https://semver.org/).
 
 ---
+## [0.2.2] — 2026-04-22
+
+### Fixed
+
+- Corrected `fastkit-core` minimum version constraint from `>=0.3.5` to `>=0.4.1`.
+  Version 0.2.1 shipped with an incorrect lower bound that would allow installation
+  alongside an incompatible core version, causing import errors at runtime.
 
 ## [0.2.1] — 2026-04-21
 
