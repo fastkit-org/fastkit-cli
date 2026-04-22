@@ -168,7 +168,7 @@ wheels = [
 
 [[package]]
 name = "fastkit-cli"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
@@ -188,7 +188,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic" },
-    { name = "fastkit-core", specifier = ">=0.3.5" },
+    { name = "fastkit-core", specifier = ">=0.4.1" },
     { name = "inflect", specifier = ">=7.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "typer", specifier = ">=0.24.1" },
@@ -203,7 +203,7 @@ dev = [
 
 [[package]]
 name = "fastkit-core"
-version = "0.3.5"
+version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -213,9 +213,9 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/86/7d/e6a4442591212c5f01bc1d620c9607416840e8ea508bb2a396e47146c967/fastkit_core-0.3.5.tar.gz", hash = "sha256:d5f9105613cb8399b96dc0829b3f5ac626cf3ce98eb7d46b27c34d6c72bd9de0", size = 124457, upload-time = "2026-02-12T18:06:49.841Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/e1/9575c4fb90f04a6f9e08f07346be91c57ab13d927b612ead5eb5d27c2e5c/fastkit_core-0.4.1.tar.gz", hash = "sha256:4df4dee40cadcfcade68e7513e5b34c7984449703e5b498ec82a4b85d6c85417", size = 155528, upload-time = "2026-04-21T06:14:54.979Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/64/89197e303bfd6d3c7e5bad6fc3fa973c38a0491e61d1fc658d0af8e14815/fastkit_core-0.3.5-py3-none-any.whl", hash = "sha256:3b36d06b2e25bef2f31033571fecc9e07cf763c636c63f451ecfc7126b69f6ab", size = 58877, upload-time = "2026-02-12T18:06:47.578Z" },
+    { url = "https://files.pythonhosted.org/packages/99/cd/6a1f186d10c1b9b2dc87047a9e193e1ad59444e650b2751142e95a205a14/fastkit_core-0.4.1-py3-none-any.whl", hash = "sha256:cb43c352a996521cf7af76fb447caa47593c9079424ebacc5942a9f4a9d58d42", size = 71591, upload-time = "2026-04-21T06:14:53.006Z" },
 ]
 
 [[package]]
